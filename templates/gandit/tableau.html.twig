@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<table> 
+    <thead> 
+        <th>Login</th><th>Mot de Passe</th><th>Supprimer un utilisateur</th>
+    </thead>
+    <tbody> 
+        {% for utilisateur in listUtilisateurs %}
+        <tr><td>
+            {{utilisateur.login}} 
+        </td><td>
+            {{utilisateur.password}}
+        </td><td>
+            <form action="/gandit/ajoututilisateur" method="POST">
+                <a href="/supprimerUtilisateur/{{utilisateur.id}}" target="_blank"> <input type="button" class="btn btn-primary" value="Supprimer"> </a>
+            </form>
+        </td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

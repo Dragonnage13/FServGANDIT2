@@ -30,14 +30,14 @@ class GANDITController extends AbstractController
         $password = $request -> request -> get("password");
         $reponse = $manager -> getRepository(Utilisateur :: class) -> findOneBy([ 'login' => $Login]);
         if ($reponse == NULL){
-            $repons ="Utilisateur inconnu";
+            $repons ="Utilisateur inconnu, veuillez reessayer !";
              } 
         else{
              $code = $reponse -> getPassword();
-             if ($code == $password){
+             if (password_verify($password,$code)){
                  $repons = "Acces autorisé";
              }else {
-                $repons = "MOT DE PASSE INVALIDE";
+                $repons = "MOT DE PASSE INVALIDE !";
              }
              
              }
@@ -61,24 +61,50 @@ class GANDITController extends AbstractController
     public function ajoututilisateur(Request $request, EntityManagerInterface $manager): Response
     {
         $newUti = new Utilisateur();
-        //$Nom = new Utilisateur();
-        //$Prenom = new Utilisateur();
-        //$MDP = new Utilisateur ();
         $nom = $request -> request -> get("nom");
         $Prenom = $request -> request -> get("Prenom");
         $MDP = $request -> request -> get("MDP");
-        $newUti->setNom($nom);
-        $manager->persist($newUti);
-        $newUti->setPrenom($Prenom);
-        $manager->persist($newUti);
-        $newUti->setCode($MDP);
+        $MDP = (password_hash($MDP, PASSWORD_DEFAULT));
+        $newUti->setLogin($nom);
+        $newUti->setPassword($MDP);
         $manager->persist($newUti);
         $manager->flush();
 
-        $text = "ajout effectuer";
+        $text = "Le nouvel utilisateur a été ajouté !";
 
        return $this->render('gandit/ajoututilisateur.html.twig', [
             'text' => $text,
         ]);
 }
+
+
+
+/**
+     * @Route("/gandit/tableau", name="gandit/tableau")
+     */
+    public function tableau(EntityManagerInterface $manager): Response
+    {
+        $Utilisateurs=$manager->getRepository(Utilisateur::class)->findAll();
+        return $this->render('gandit/tableau.html.twig',['listUtilisateurs' => $Utilisateurs]);
+}
+/**
+     * @Route("/serveur/ouverture", name="gandit/ouverture")
+     */
+    public function ouverture(interfaceOuverture $ouverture): Response
+    {
+        $vs = $ouverture -> get('nomVar');
+        $val=44;
+        $ouverture -> set('nomVar',$val);
+        return $this->render ('gandit/ouverture.html.twig', ['name' => $vs]);
+}
+
+/**
+* @Route("/supprimerUtilisateur/{id}",name="supprimerUtilisateur")
+*/
+public function supprimerUtilisateur(EntityManagerInterface $manager,Utilisateur $editutil): Response {
+    $manager->remove($editutil);
+    $manager->flush();
+    return $this->redirectToRoute ('gandit/tableau');
+ }
+
 }
